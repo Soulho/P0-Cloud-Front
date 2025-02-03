@@ -14,12 +14,13 @@ const TaskColumn = ({ title, icon, tasks, status, handleDelete, handleEdit }) =>
                 (task, index) =>
                     task.status === status && (
                         <TaskCard
-                            key={index}
-                            title={task.task}
-                            tags={task.tags}
+                            key={task.id}
+                            title={task.task} // Mostrar el nombre de la tarea
+                            category={task.category}
+                            dueDate={task.fechaFin}
                             handleDelete={handleDelete}
-                            handleEdit={handleEdit}
-                            index={index}
+                            handleEdit={() => handleEdit(task)}
+                            index={task.id}
                         />
                     )
             )}

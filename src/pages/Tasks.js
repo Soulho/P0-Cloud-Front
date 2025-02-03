@@ -3,17 +3,19 @@ import axios from "axios";
 import "../styles/Tasks.css";
 import TaskForm from "../components/TaskForm";
 import TaskColumn from "../components/TaskColumn";
+import TaskEdit from "../components/TaskEdit";
 import todoIcon from "../assets/direct-hit.png";
 import doingIcon from "../assets/glowing-star.png";
 import doneIcon from "../assets/check-mark-button.png";
+import { useNavigate } from "react-router-dom";
 
 const Tasks = () => {
   const [tasks, setTasks] = useState([]);
   const [error, setError] = useState("");
-
+  const [editingTask, setEditingTask] = useState(null);
   // Obtener el token del usuario autenticado
   const token = localStorage.getItem("token");
-
+  const navigate = useNavigate();
   useEffect(() => {
     if (!token) {
       setError("No autorizado. Redirigiendo...");
@@ -45,11 +47,21 @@ const Tasks = () => {
 
     // Petición GET al backend para obtener las tareas del usuario autenticado
     axios
-      .get(`http://localhost:8000/tasks/usuarios/${userId}/tareas`, {
+      .get(`http://127.0.0.1:8000/tasks/usuarios/${userId}/tareas`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
-        setTasks(response.data);
+        // Ajustar la estructura de las tareas al formato necesario
+        const formattedTasks = response.data.map((task) => ({
+          id: task.id,
+          task: task.texto_tarea, // Cambia "texto_tarea" a "task"
+          fechaIni: task.fecha_creacion,
+          status: task.estado, // Convertir estado a formato correcto
+          category: task.categoria.nombre,
+          fechaFin: task.fecha_tentativa_finalizacion // Extraer nombre de la categoría
+        }));
+
+        setTasks(formattedTasks);
       })
       .catch((error) => {
         console.error("Error obteniendo las tareas:", error);
@@ -57,17 +69,25 @@ const Tasks = () => {
       });
   }, [token]);
 
-  const handleDelete = (taskId) => {
-    setTasks(tasks.filter((task) => task.id !== taskId));
+  const handleDelete = async (taskId) => {
+    try {
+      await axios.delete(`http://127.0.0.1:8000/tasks/tareas/${taskId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setTasks(tasks.filter(task => task.id !== taskId)); // Actualizar el estado después de eliminar
+    } catch (error) {
+      console.error("Error al eliminar la tarea:", error);
+    }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.href = "/login";
+    navigate("/");
   };
 
-  const handleEdit = () => {
-    // Implementar función de edición
+  const handleEdit = (task) => {
+    console.log("Editando tarea:", task);
+    setEditingTask(task);
   };
 
   return (
@@ -78,31 +98,39 @@ const Tasks = () => {
         </button>
       </div>
 
+      {editingTask && (
+          <TaskEdit
+              task={editingTask}
+              setTasks={setTasks}
+              closeModal={() => setEditingTask(null)}
+          />
+      )}
+
       {error && <p className="error-message">{error}</p>}
 
       <TaskForm setTasks={setTasks} />
       <div className="tasks_main">
         <TaskColumn
-          title="To do"
+          title="Sin Empezar"
           icon={todoIcon}
           tasks={tasks}
-          status="todo"
+          status="Sin Empezar"
           handleDelete={handleDelete}
           handleEdit={handleEdit}
         />
         <TaskColumn
-          title="Doing"
+          title="Empezada"
           icon={doingIcon}
           tasks={tasks}
-          status="doing"
+          status="Empezada"
           handleDelete={handleDelete}
           handleEdit={handleEdit}
         />
         <TaskColumn
-          title="Done"
+          title="Finalizada"
           icon={doneIcon}
           tasks={tasks}
-          status="done"
+          status="Finalizada"
           handleDelete={handleDelete}
           handleEdit={handleEdit}
         />

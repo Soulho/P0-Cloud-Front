@@ -12,10 +12,10 @@ const Tag = ({ tagName, selectTag, selected }) => {
     };
     return (
         <button
-            type='button'
-            className='tag'
-            style={selected ? tagStyle[tagName] : tagStyle.default}
-            onClick={() => selectTag(tagName)}>
+            type="button"
+            className="tag"
+            style={selected ? tagStyle[tagName] || tagStyle.default : tagStyle.default}
+            onClick={() => selectTag && selectTag(tagName)}>
             {tagName}
         </button>
     );

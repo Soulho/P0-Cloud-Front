@@ -68,3 +68,9 @@
 .task_edit:hover .edit_icon {
     opacity: 80%;
 }
+
+.task_due_date {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
+}

@@ -20,7 +20,7 @@ function Register() {
     console.log("Enviando usuario:", userData);
   
     try {
-      const response = await axios.post("http://localhost:8000/users/users", userData);
+      const response = await axios.post("http://127.0.0.1:8000/users/users", userData);
       console.log("Respuesta del backend:", response.data);
       navigate("/login");
     } catch (error) {
